@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b1020" />
+  <meta name="description" content="Helioprism — one app, two optical transports. Send a file with light: QR or colour matrix, no network." />
+  <title>Helioprism</title>
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="icon" type="image/svg+xml" href="./icon-192.svg" />
+  <link rel="apple-touch-icon" href="./icon-192.svg" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <button class="ghost-btn" id="backBtn" hidden aria-label="Back">&#8592;</button>
+    <div class="brand"><span class="brand-mark">&#9670;</span> Helioprism</div>
+    <a class="ghost-btn" href="https://github.com/drsamonline/helioprism" target="_blank" rel="noopener" aria-label="GitHub">&#9737;</a>
+  </header>
+
+  <main class="wrap">
+    <!-- HOME -->
+    <section id="screen-home" class="screen active">
+      <h1 class="hero">One app.<br /><span>Two kinds of light.</span></h1>
+      <p class="lede">Helioprism sends a file between two devices using only a screen and a camera — picking the transport that fits. No network, no cables, no pairing.</p>
+
+      <div class="mode-grid">
+        <button class="mode-card send" id="goSend">
+          <span class="mode-icon">&#8679;</span>
+          <span class="mode-title">Send</span>
+          <span class="mode-sub">Pick files, show the code</span>
+        </button>
+        <button class="mode-card receive" id="goReceive">
+          <span class="mode-icon">&#8681;</span>
+          <span class="mode-title">Receive</span>
+          <span class="mode-sub">Point a camera at the code</span>
+        </button>
+      </div>
+
+      <ul class="facts">
+        <li><strong>QR</strong><span>universal — any camera, any scanner</span></li>
+        <li><strong>SpectraCode</strong><span>colour matrix — several KB per frame</span></li>
+        <li><strong>Auto</strong><span>picks the right one per file</span></li>
+      </ul>
+    </section>
+
+    <!-- SEND -->
+    <section id="screen-send" class="screen">
+      <div class="card">
+        <div class="dropzone" id="dropzone">
+          <input type="file" id="fileInput" multiple hidden />
+          <div class="dz-icon">&#128193;</div>
+          <p><strong>Choose files</strong> or drop them here</p>
+          <p class="muted">Up to 20&nbsp;MB total</p>
+          <button class="btn primary" id="pickBtn">Select files</button>
+        </div>
+        <div class="filelist" id="fileList"></div>
+      </div>
+
+      <div class="card options">
+        <label class="field">
+          <span>Transport</span>
+          <select id="transportSelect">
+            <option value="" selected>Auto — pick by file size</option>
+            <option value="qr">QR — universal</option>
+            <option value="spectra">SpectraCode — high capacity</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>Density</span>
+          <select id="presetSelect">
+            <option value="robust">Robust — easiest to scan</option>
+            <option value="balanced" selected>Balanced — the default</option>
+            <option value="dense">Dense — fewest frames</option>
+          </select>
+        </label>
+        <label class="switch">
+          <input type="checkbox" id="plainMode" />
+          <span>Compatibility mode — one plain QR any scanner can read (small text only)</span>
+        </label>
+        <p class="note" id="transportNote"></p>
+        <div class="stats" id="sendStats" hidden></div>
+        <button class="btn primary wide" id="startSend" disabled>Start transfer</button>
+      </div>
+    </section>
+
+    <!-- SEND — SHOWING -->
+    <section id="screen-show" class="screen">
+      <div class="qr-stage"><canvas id="qrCanvas" width="900" height="900"></canvas></div>
+      <div class="progress">
+        <div class="bar"><i id="sendBar"></i></div>
+        <div class="progress-meta"><span id="sendMeta">Preparing…</span><span id="sendPct">0%</span></div>
+      </div>
+      <button class="btn danger wide" id="stopSend">Stop</button>
+    </section>
+
+    <!-- RECEIVE -->
+    <section id="screen-receive" class="screen">
+      <div class="camera">
+        <video id="video" autoplay playsinline muted></video>
+        <div class="reticle"></div>
+      </div>
+      <div class="progress">
+        <div class="bar"><i id="recvBar"></i></div>
+        <div class="progress-meta"><span id="recvMeta">Point the camera at the sender's code</span><span id="recvPct">0%</span></div>
+      </div>
+      <div class="results" id="results" hidden></div>
+      <div class="row">
+        <button class="btn ghost" id="stopRecv">Stop</button>
+        <button class="btn primary" id="saveAll" hidden>Save all</button>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast"></div>
+  <script type="module" src="./main.js"></script>
+</body>
+</html>

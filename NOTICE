@@ -1,0 +1,27 @@
+# Third-party notices
+
+## qrcode-generator
+
+- Version: 2.0.4 — Licence: MIT
+- https://github.com/kazuhikoarase/qrcode-generator
+- Renders the QR transport's codes.
+
+## jsQR
+
+- Version: 1.4.0 — Licence: Apache License 2.0
+- https://github.com/cozmo/jsQR
+- Decodes the QR transport from camera frames.
+
+## esbuild (development only)
+
+- Licence: MIT — https://github.com/evanw/esbuild — bundles the app.
+
+## eslint (development only)
+
+- Licence: MIT — https://github.com/eslint/eslint — lints the code.
+
+---
+
+Helioprism's own code (both transports, the shared frame layer, the selection
+engine and the app) is covered by the PolyForm Noncommercial licence in
+`LICENSE`.

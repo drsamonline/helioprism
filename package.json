@@ -1,0 +1,40 @@
+{
+  "name": "helioprism",
+  "version": "1.0.0",
+  "description": "One app, two optical transports — send a file with light over QR or a colour matrix. Offline, no network.",
+  "type": "module",
+  "license": "SEE LICENSE IN LICENSE",
+  "author": "Dr Sohil Momin (https://github.com/drsamonline)",
+  "homepage": "https://drsamonline.github.io/helioprism/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/drsamonline/helioprism.git"
+  },
+  "keywords": [
+    "optical-transfer",
+    "qr",
+    "colour-matrix",
+    "offline",
+    "pwa",
+    "fountain-code",
+    "air-gapped"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "dev": "node tools/dev.mjs",
+    "build": "node tools/build.mjs",
+    "serve": "node tools/serve.js",
+    "test": "node --test tests/",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "jsqr": "^1.4.0",
+    "qrcode-generator": "^2.0.4"
+  },
+  "devDependencies": {
+    "esbuild": "^0.23.0",
+    "eslint": "^9.15.0"
+  }
+}

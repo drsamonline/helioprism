@@ -1,0 +1,35 @@
+# Changelog
+
+All notable changes to Helioprism are documented here. The format is based on
+[Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
+adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [1.0.0] - 2026-10-22
+
+First release. One app, two optical transports.
+
+### Added
+- **Shared frame + fountain layer** (`src/lib/frame.js`, `fountain.js`): one
+  rateless LT frame format carrying a per-transport magic byte, so a receiver can
+  auto-detect which physical layer carried a frame.
+- **QR transport** (`src/transports/qr.js`): monochrome animated QR, gzip
+  container, plus a plain compatibility mode any third-party scanner can read.
+- **SpectraCode transport** (`src/transports/spectra.js`): colour matrix,
+  order-1 arithmetic coder with a match model, Reed-Solomon, full optical
+  decoder running in a worker.
+- **Selection engine** (`src/transports/index.js`): auto-pick by payload size, or
+  choose a transport explicitly.
+- **App** with a transport picker, live progress and PWA install.
+- **Tests** (17): frame format, fountain codes, selection, and end-to-end
+  loopbacks for both transports — including a mock canvas so each transport's real
+  `render()` and `decodeFrame()` are exercised without a browser.
+- Dual licence (PolyForm Noncommercial + commercial-by-invoice), `NOTICE`, badged
+  README, landing page, `tools/build.mjs`, and ci / pages / build-apps workflows.
+
+### Notes
+- The QR transport inherits the fixes found while building BlinkTransfer v3
+  (systematic fountain prefix, Robust-Soliton clamp, exact QR module tiling).
+- The colour transport inherits BlinkCode AI's match-model compression, rateless
+  frames, optical robustness and bicubic perceptual reconstruction.
+
+[1.0.0]: https://github.com/drsamonline/helioprism/releases/tag/v1.0.0

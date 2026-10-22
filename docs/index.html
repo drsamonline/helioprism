@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Helioprism — one app, two kinds of light</title>
+<meta name="description" content="Move a file between two devices using only a screen and a camera. Two optical transports — QR and a colour matrix — one app, offline, no network." />
+<meta name="theme-color" content="#0a0d1c" />
+<link rel="icon" type="image/svg+xml" href="./assets/icon.svg" />
+<meta property="og:title" content="Helioprism — one app, two kinds of light" />
+<meta property="og:description" content="Optical file transfer with two transports: universal QR and a high-capacity colour matrix." />
+<meta property="og:type" content="website" />
+<style>
+  :root { --bg:#0a0d1c; --surface:#151c36; --line:rgba(255,255,255,.09); --text:#eef2ff; --muted:#97a3c7; --violet:#7c3aed; --cyan:#06b6d4; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+         background:radial-gradient(1200px 700px at 50% -10%, #241b50 0%, var(--bg) 60%) fixed; color:var(--text); line-height:1.55; -webkit-font-smoothing:antialiased; }
+  .wrap { max-width:960px; margin:0 auto; padding:0 22px; }
+  header { text-align:center; padding:72px 0 40px; }
+  .logo { width:96px; height:96px; margin-bottom:18px; }
+  h1 { font-size:clamp(2.2rem,6vw,3.6rem); font-weight:800; letter-spacing:-.02em; line-height:1.05; }
+  h1 span { background:linear-gradient(120deg,#a78bfa,var(--cyan)); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .lede { color:var(--muted); font-size:1.15rem; max-width:62ch; margin:18px auto 0; }
+  .cta { display:flex; gap:14px; justify-content:center; flex-wrap:wrap; margin:30px 0 8px; }
+  .btn { display:inline-block; padding:14px 24px; border-radius:14px; font-weight:650; text-decoration:none; color:var(--text); border:1px solid var(--line); transition:transform .15s; }
+  .btn:hover { transform:translateY(-2px); }
+  .btn.primary { background:linear-gradient(135deg,var(--violet),#4f46e5); border:none; box-shadow:0 12px 34px rgba(124,58,237,.35); }
+  .badges { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-top:22px; }
+  .badges img { height:20px; }
+  section { padding:34px 0; }
+  h2 { font-size:1.6rem; margin-bottom:18px; letter-spacing:-.01em; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:16px; }
+  .card { background:var(--surface); border:1px solid var(--line); border-radius:18px; padding:22px; }
+  .card h3 { font-size:1.05rem; margin-bottom:8px; }
+  .card p { color:var(--muted); font-size:.94rem; }
+  .card .tag { display:inline-block; font-size:.72rem; letter-spacing:.06em; text-transform:uppercase; color:#c4b5fd; margin-bottom:8px; }
+  pre { background:#0e1428; border:1px solid var(--line); border-radius:14px; padding:18px; overflow-x:auto; color:#cbd5f5; font-size:.86rem; }
+  table { width:100%; border-collapse:collapse; font-size:.92rem; }
+  th, td { text-align:left; padding:10px; border-bottom:1px solid var(--line); }
+  th { color:var(--muted); font-weight:600; }
+  footer { border-top:1px solid var(--line); margin-top:30px; padding:28px 0 60px; color:var(--muted); font-size:.9rem; text-align:center; }
+  footer a { color:#a5b4fc; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <img class="logo" src="./assets/icon.svg" alt="Helioprism" />
+      <h1>One app.<br /><span>Two kinds of light.</span></h1>
+      <p class="lede">
+        Helioprism moves a file between two devices using only a screen and a
+        camera — no network, no cables, no pairing. It carries the same rateless
+        frame stream over <strong>two transports</strong> and picks the right one
+        for the job.
+      </p>
+      <div class="cta">
+        <a class="btn primary" href="./play/">Open the app</a>
+        <a class="btn" href="https://github.com/drsamonline/helioprism">View source</a>
+      </div>
+      <div class="badges">
+        <img src="https://img.shields.io/badge/license-PolyForm%20Noncommercial%201.0.0-7c3aed" alt="licence" />
+        <img src="https://img.shields.io/badge/PWA-offline--first-06b6d4" alt="pwa" />
+        <img src="https://img.shields.io/github/stars/drsamonline/helioprism" alt="stars" />
+      </div>
+    </header>
+
+    <section>
+      <h2>The two transports</h2>
+      <table>
+        <tr><th></th><th>QR</th><th>SpectraCode</th></tr>
+        <tr><td>Physical layer</td><td>monochrome QR modules</td><td>36-colour cells, 5 bits each</td></tr>
+        <tr><td>Per frame</td><td>~1.4 KB</td><td>~5.1 KB</td></tr>
+        <tr><td>Best for</td><td>small files, cheap optics, any scanner</td><td>larger files</td></tr>
+      </table>
+      <p class="card" style="margin-top:16px">
+        Both carry the <strong>same</strong> frame format and the <strong>same</strong>
+        rateless fountain stream, so a missed frame costs one more symbol rather than
+        a whole loop. The magic byte in each frame says which layer carried it, so the
+        receiver <strong>auto-detects</strong>.
+      </p>
+    </section>
+
+    <section>
+      <h2>How it works</h2>
+      <pre>files ─▶ container ─▶ fountain symbols ─▶ frames ─▶ QR  or  colour matrix
+                                                            │
+        files ◀─ container ◀─ collector ◀─ frame ◀─ camera ─┘</pre>
+      <div class="grid" style="margin-top:18px">
+        <div class="card"><span class="tag">Choose</span><h3>Selection engine</h3><p>Auto-picks QR for small payloads and the colour transport for large ones — or you choose.</p></div>
+        <div class="card"><span class="tag">Compatibility</span><h3>Plain QR mode</h3><p>A small text file can go out as one plain QR that any third-party scanner reads.</p></div>
+        <div class="card"><span class="tag">Offline</span><h3>Installable PWA</h3><p>After the first load the app never touches the network.</p></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Free for people, licensed for business</h2>
+      <p class="card">
+        Helioprism is free for personal, academic, hobby and non-profit use under the
+        PolyForm Noncommercial License 1.0.0. Commercial use needs a paid licence,
+        issued by invoice on request.
+      </p>
+    </section>
+
+    <footer>
+      Built by <a href="https://github.com/drsamonline">Dr Sohil Momin</a> ·
+      <a href="https://github.com/drsamonline/helioprism">GitHub</a> ·
+      <a href="./play/">Live demo</a>
+    </footer>
+  </div>
+</body>
+</html>
