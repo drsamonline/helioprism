@@ -121,7 +121,32 @@ function renderFileList() {
   $('startSend').disabled = false;
 }
 
+/** The transport that would actually be used right now. */
+function effectiveTransport() {
+  return select(totalBytes(), state.force);
+}
+
+/**
+ * Rebuild the density options for the effective transport, so we never offer a
+ * density a transport does not have (SpectraCode has no "dense", and picking it
+ * used to be silently ignored).
+ */
+function syncPresets() {
+  const t = effectiveTransport();
+  const keys = Object.keys(t.PRESETS);
+  const wanted = keys.includes(state.preset)
+    ? state.preset
+    : keys.includes('balanced')
+      ? 'balanced'
+      : keys[0];
+  const sel = $('presetSelect');
+  sel.innerHTML = keys.map((k) => `<option value="${k}">${t.PRESETS[k].label}</option>`).join('');
+  sel.value = wanted;
+  state.preset = wanted;
+}
+
 function updateNote() {
+  syncPresets();
   if (!state.files.length) {
     $('transportNote').textContent = '';
     return;
@@ -134,7 +159,7 @@ function updateNote() {
     $('transportNote').textContent = 'Compatibility mode — one plain QR, readable by any scanner.';
     return;
   }
-  const t = select(totalBytes(), state.force);
+  const t = effectiveTransport();
   $('transportNote').textContent = `Transport: ${t.label} — ${reason(totalBytes(), state.force)}.`;
 }
 
@@ -293,6 +318,20 @@ function grab(w, h) {
   return ctx.getImageData(0, 0, w, h);
 }
 
+/** QR at a few scales, so a code that is too close or too far still decodes. */
+function tryQr(vw, vh) {
+  for (const scale of [1, 0.65, 0.4]) {
+    const r = qr.decodeRaw(grab(Math.round(vw * scale), Math.round(vh * scale)));
+    if (r) return r;
+  }
+  return null;
+}
+
+function decodeQrFrame(vw, vh) {
+  const r = tryQr(vw, vh);
+  return r ? r.frame : null;
+}
+
 async function scanLoop() {
   let misses = 0;
   while (state.scanning) {
@@ -316,7 +355,7 @@ async function scanLoop() {
 async function ingest(vw, vh) {
   if (!state.activeTransport) {
     // Auto-detect: QR first (cheap), then the colour transport.
-    const raw = qr.decodeRaw(grab(vw, vh));
+    const raw = tryQr(vw, vh);
     if (raw && raw.frame) {
       state.activeTransport = qr;
       state.collector = qr.createCollector();
@@ -336,9 +375,10 @@ async function ingest(vw, vh) {
     throw new Error('no frame');
   }
 
-  const t = state.activeTransport;
   const frame =
-    t === qr ? qr.decodeFrame(grab(vw, vh)) : await spectra.decodeFrame(grab(vw, vh), spectraDecoder);
+    state.activeTransport === qr
+      ? decodeQrFrame(vw, vh)
+      : await spectra.decodeFrame(grab(vw, vh), spectraDecoder);
   if (!frame) throw new Error('no frame');
   return absorb(frame);
 }
@@ -385,6 +425,9 @@ function finishPlain(text) {
 function renderResults(files) {
   const box = $('results');
   box.hidden = false;
+  // Release the previous transfer's blob URLs before making new ones.
+  for (const url of state.resultUrls) URL.revokeObjectURL(url);
+  state.resultUrls = [];
   box.innerHTML = files
     .map((f) => {
       const url = URL.createObjectURL(new Blob([f.bytes], { type: f.type }));
@@ -399,9 +442,11 @@ $('saveAll').addEventListener('click', () => {
   state.received.forEach((f, i) => {
     setTimeout(() => {
       const a = document.createElement('a');
-      a.href = URL.createObjectURL(new Blob([f.bytes], { type: f.type }));
+      const url = URL.createObjectURL(new Blob([f.bytes], { type: f.type }));
+      a.href = url;
       a.download = f.name;
       a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
     }, i * 250);
   });
 });
@@ -419,3 +464,6 @@ function stopReceiving() {
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
 }
+
+// Line the density picker up with the transport that will be used by default.
+syncPresets();

@@ -11,6 +11,7 @@ import {
   parseFrame,
   FountainCollector,
   MAGIC_QR,
+  MAGICS,
   splitBlocks,
   encodeSymbol,
   blockCount,
@@ -24,9 +25,9 @@ export const magic = MAGIC_QR;
 
 /** Symbol payload per frame; smaller scans more reliably. */
 export const PRESETS = {
-  robust: { blockSize: 800, label: 'Robust' },
-  balanced: { blockSize: 1400, label: 'Balanced' },
-  dense: { blockSize: 1800, label: 'Dense' },
+  robust: { blockSize: 800, label: 'Robust — easiest to scan' },
+  balanced: { blockSize: 1400, label: 'Balanced — the default' },
+  dense: { blockSize: 1800, label: 'Dense — fewest frames' },
 };
 export const DEFAULT_PRESET = 'balanced';
 export const presetBlockSize = (name) => (PRESETS[name] ?? PRESETS[DEFAULT_PRESET]).blockSize;
@@ -76,11 +77,17 @@ export function decodeFrame(image) {
 export function decodeRaw(image) {
   const r = decodeRawQr(image);
   if (!r) return null;
-  try {
-    return { frame: parseFrame(r.bytes), text: null };
-  } catch {
-    return { frame: null, text: r.text };
+  // A payload that begins with a Helioprism magic byte is a frame. If it fails to
+  // parse it is corrupt, not plain text — do not fall through and mistake it for
+  // a text file.
+  if (MAGICS.has(r.bytes[0])) {
+    try {
+      return { frame: parseFrame(r.bytes), text: null };
+    } catch {
+      return null;
+    }
   }
+  return { frame: null, text: r.text };
 }
 
 /** Draw a plain QR carrying raw text — readable by any scanner. */

@@ -23,6 +23,10 @@ export const MAGICS = new Set([MAGIC_QR, MAGIC_SPECTRA]);
 export const VERSION = 1;
 export const HEADER_SIZE = 22;
 
+// A frame is untrusted input: bound what a header may claim, so a corrupt or
+// crafted frame cannot make the receiver allocate a huge decoder.
+export const MAX_CONTAINER = 64 * 1024 * 1024;
+
 export { splitBlocks, encodeSymbol, blockCount };
 
 export const frameBytes = (blockSize) => HEADER_SIZE + blockSize;
@@ -60,12 +64,20 @@ export function parseFrame(bytes) {
   const k = view.getUint16(4, false);
   const blockSize = view.getUint16(6, false);
   if (k === 0 || blockSize === 0) throw new Error('frame has an empty grid');
+  // The payload must actually carry `blockSize` bytes — otherwise a short frame
+  // could claim a huge block and blow up the decoder's allocation.
+  if (bytes.length < HEADER_SIZE + blockSize) throw new Error('frame payload truncated');
+  const totalLength = view.getUint32(8, false);
+  // k blocks of blockSize bytes must be able to hold the container, and the
+  // container must be within the transfer cap.
+  if (totalLength > k * blockSize) throw new Error('frame sizes are inconsistent');
+  if (totalLength > MAX_CONTAINER) throw new Error('frame declares an oversized transfer');
   return {
     magic: bytes[0],
     transferId: view.getUint16(2, false),
     k,
     blockSize,
-    totalLength: view.getUint32(8, false),
+    totalLength,
     checksum: view.getUint32(12, false),
     symbolId: view.getUint32(16, false),
     data: bytes.slice(HEADER_SIZE, HEADER_SIZE + blockSize),
@@ -109,6 +121,7 @@ export class FountainCollector {
   add(frame) {
     if (
       !this.decoder ||
+      this.magic !== frame.magic ||
       this.transferId !== frame.transferId ||
       this.decoder.k !== frame.k ||
       this.decoder.blockSize !== frame.blockSize ||

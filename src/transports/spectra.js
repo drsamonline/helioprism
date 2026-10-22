@@ -17,6 +17,7 @@ import {
   encodeSymbol,
   blockCount,
   HEADER_SIZE,
+  MAX_CONTAINER,
 } from '../lib/frame.js';
 import { crc32, generateUUID } from '../lib/utils.js';
 
@@ -26,8 +27,8 @@ export const blurb = 'Colour matrix — several KB per frame, for larger files';
 export const magic = MAGIC_SPECTRA;
 
 export const PRESETS = {
-  robust: { density: 'robust', label: 'Robust' },
-  balanced: { density: 'standard', label: 'Balanced' },
+  robust: { density: 'robust', label: 'Robust — easiest to scan' },
+  balanced: { density: 'standard', label: 'Balanced — the default' },
 };
 export const DEFAULT_PRESET = 'balanced';
 
@@ -44,7 +45,8 @@ function compress(container) {
   return arithEncode(container, new Order1MatchModel(null));
 }
 function decompress(bytes) {
-  return arithDecode(bytes, new Order1MatchModel(null));
+  // Match the cap the app enforces, so a payload the sender accepted always opens.
+  return arithDecode(bytes, new Order1MatchModel(null), MAX_CONTAINER);
 }
 
 export async function encode(files, preset = DEFAULT_PRESET) {
