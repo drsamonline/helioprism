@@ -20,11 +20,20 @@ First release. One app, two optical transports.
 - **Selection engine** (`src/transports/index.js`): auto-pick by payload size, or
   choose a transport explicitly.
 - **App** with a transport picker, live progress and PWA install.
-- **Tests** (17): frame format, fountain codes, selection, and end-to-end
+- **Tests** (21): frame format, fountain codes, selection, and end-to-end
   loopbacks for both transports — including a mock canvas so each transport's real
   `render()` and `decodeFrame()` are exercised without a browser.
 - Dual licence (PolyForm Noncommercial + commercial-by-invoice), `NOTICE`, badged
   README, landing page, `tools/build.mjs`, and ci / pages / build-apps workflows.
+
+### Fixed
+- `parseFrame` bounds an untrusted header (payload length, `k * blockSize`, a
+  64 MB cap), and `FountainCollector` also compares the magic byte so a frame
+  from the other transport can never be absorbed into the current decoder.
+- `qr.decodeRaw` no longer mistakes a corrupt frame for a plain-text QR.
+- The QR receiver tries three decode scales again (it had regressed to one).
+- The density picker lists only the densities the chosen transport supports.
+- Result blob URLs are revoked; the SpectraCode decode cap matches the app limit.
 
 ### Notes
 - The QR transport inherits the fixes found while building BlinkTransfer v3
