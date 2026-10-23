@@ -15,7 +15,7 @@ export default [
         setTimeout: 'readonly', clearTimeout: 'readonly', setInterval: 'readonly',
         clearInterval: 'readonly', requestAnimationFrame: 'readonly',
         TextEncoder: 'readonly', TextDecoder: 'readonly',
-        process: 'readonly', Buffer: 'readonly',
+        process: 'readonly', Buffer: 'readonly', btoa: 'readonly', atob: 'readonly', module: 'readonly', require: 'readonly', exports: 'readonly', globalThis: 'readonly',
       },
     },
     rules: {
