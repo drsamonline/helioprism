@@ -1,8 +1,9 @@
-// Shared frame format for both transports.
+// Shared frame format for both transports — delegated to the shared `frame-kit`.
 //
-// Every on-screen frame in a Helioprism transfer carries the same header plus
-// one fountain symbol. The magic byte says which physical layer carried it, so a
-// receiver can auto-detect the transport from any single frame.
+// Every on-screen frame in a Helioprism transfer carries the same 22-byte
+// self-describing header plus one fountain symbol. The magic byte says which
+// physical layer carried it, so a receiver can auto-detect the transport from any
+// single frame.
 //
 //   0     magic (0xB7 QR, 0xB2 colour)
 //   1     version
@@ -13,39 +14,34 @@
 //   12-15 checksum        u32   CRC-32 of the container
 //   16-19 symbolId        u32   fountain symbol id (0,1,2,... forever)
 //   20-21 headerCRC       u16   CRC-16 of bytes 0..19
+//
+// The header, its strict validation and the rateless collector used to live
+// here; they are now extracted once into `drsamonline/frame-kit`, vendored beside
+// this file as `frame-kit.js`. Everything here is a thin adapter over the kit, so
+// the repo keeps the same public API while the framing lives in one place.
 
-import { crc16, crc32 } from './utils.js';
+import './frame-kit.js'; // side-effect: defines globalThis.Frame
 import { LTDecoder, splitBlocks, encodeSymbol, blockCount } from './fountain.js';
+
+const Frame = globalThis.Frame;
 
 export const MAGIC_QR = 0xb7;
 export const MAGIC_SPECTRA = 0xb2;
 export const MAGICS = new Set([MAGIC_QR, MAGIC_SPECTRA]);
-export const VERSION = 1;
-export const HEADER_SIZE = 22;
+export const VERSION = Frame.VERSION;
+export const HEADER_SIZE = Frame.HEADER_SIZE;
 
 // A frame is untrusted input: bound what a header may claim, so a corrupt or
 // crafted frame cannot make the receiver allocate a huge decoder.
-export const MAX_CONTAINER = 64 * 1024 * 1024;
+export const MAX_CONTAINER = Frame.MAX_CONTAINER;
 
 export { splitBlocks, encodeSymbol, blockCount };
 
-export const frameBytes = (blockSize) => HEADER_SIZE + blockSize;
+export const frameBytes = (blockSize) => Frame.frameBytes(blockSize);
 
 /** Pack one fountain symbol into a frame. */
 export function packFrame({ magic, transferId, k, blockSize, totalLength, checksum, symbolId, data }) {
-  const out = new Uint8Array(HEADER_SIZE + data.length);
-  const view = new DataView(out.buffer);
-  out[0] = magic;
-  out[1] = VERSION;
-  view.setUint16(2, transferId & 0xffff, false);
-  view.setUint16(4, k, false);
-  view.setUint16(6, blockSize, false);
-  view.setUint32(8, totalLength, false);
-  view.setUint32(12, checksum, false);
-  view.setUint32(16, symbolId, false);
-  view.setUint16(20, crc16(out.subarray(0, 20)), false);
-  out.set(data, HEADER_SIZE);
-  return out;
+  return Frame.pack({ magic, transferId, k, blockSize, totalLength, payloadCRC: checksum, symbolId, data });
 }
 
 /**
@@ -54,98 +50,27 @@ export function packFrame({ magic, transferId, k, blockSize, totalLength, checks
  * @throws if the bytes are not a valid frame
  */
 export function parseFrame(bytes) {
-  if (bytes.length < HEADER_SIZE) throw new Error('frame truncated');
-  if (!MAGICS.has(bytes[0])) throw new Error('not a Helioprism frame');
-  if (bytes[1] !== VERSION) throw new Error(`unsupported frame version ${bytes[1]}`);
-  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
-  if (crc16(bytes.subarray(0, 20)) !== view.getUint16(20, false)) {
-    throw new Error('frame header failed its checksum');
-  }
-  const k = view.getUint16(4, false);
-  const blockSize = view.getUint16(6, false);
-  if (k === 0 || blockSize === 0) throw new Error('frame has an empty grid');
-  // The payload must actually carry `blockSize` bytes — otherwise a short frame
-  // could claim a huge block and blow up the decoder's allocation.
-  if (bytes.length < HEADER_SIZE + blockSize) throw new Error('frame payload truncated');
-  const totalLength = view.getUint32(8, false);
-  // k blocks of blockSize bytes must be able to hold the container, and the
-  // container must be within the transfer cap.
-  if (totalLength > k * blockSize) throw new Error('frame sizes are inconsistent');
-  if (totalLength > MAX_CONTAINER) throw new Error('frame declares an oversized transfer');
+  const f = Frame.parse(bytes, { magics: MAGICS, label: 'Helioprism' });
   return {
-    magic: bytes[0],
-    transferId: view.getUint16(2, false),
-    k,
-    blockSize,
-    totalLength,
-    checksum: view.getUint32(12, false),
-    symbolId: view.getUint32(16, false),
-    data: bytes.slice(HEADER_SIZE, HEADER_SIZE + blockSize),
+    magic: f.magic,
+    transferId: f.transferId,
+    k: f.k,
+    blockSize: f.blockSize,
+    totalLength: f.totalLength,
+    checksum: f.payloadCRC,
+    payloadCRC: f.payloadCRC,
+    symbolId: f.symbolId,
+    data: f.data,
   };
 }
 
 /**
  * Rateless collector shared by both transports: absorbs fountain symbols from
- * any frame until the container is rebuilt, then verifies CRC-32.
+ * any frame until the container is rebuilt, then verifies CRC-32. The logic now
+ * lives in `frame-kit`; this binds it to the repo's LT decoder.
  */
-export class FountainCollector {
+export class FountainCollector extends Frame.FountainCollector {
   constructor() {
-    this.reset();
-  }
-
-  reset() {
-    this.magic = null;
-    this.transferId = null;
-    this.decoder = null;
-    this.checksum = 0;
-    this.symbols = 0;
-  }
-
-  get count() {
-    return this.decoder ? this.decoder.k : 0;
-  }
-
-  get received() {
-    return this.decoder ? this.decoder.resolved : 0;
-  }
-
-  get complete() {
-    return this.decoder ? this.decoder.complete : false;
-  }
-
-  get progress() {
-    return this.decoder ? this.decoder.progress : 0;
-  }
-
-  /** Absorb one decoded frame. */
-  add(frame) {
-    if (
-      !this.decoder ||
-      this.magic !== frame.magic ||
-      this.transferId !== frame.transferId ||
-      this.decoder.k !== frame.k ||
-      this.decoder.blockSize !== frame.blockSize ||
-      this.decoder.length !== frame.totalLength
-    ) {
-      this.magic = frame.magic;
-      this.transferId = frame.transferId;
-      this.decoder = new LTDecoder(frame.k, frame.blockSize, frame.totalLength);
-      this.checksum = frame.checksum;
-      this.symbols = 0;
-      this.decoder.addSymbol(frame.symbolId, frame.data);
-      this.symbols++;
-      return { fresh: true, restarted: true };
-    }
-    const fresh = this.decoder.addSymbol(frame.symbolId, frame.data);
-    if (fresh) this.symbols++;
-    return { fresh, restarted: false };
-  }
-
-  /** Rebuild the container and verify its checksum. */
-  assemble() {
-    if (!this.complete) throw new Error('transfer incomplete');
-    const out = this.decoder.payload();
-    if (crc32(out) !== this.checksum) throw new Error('checksum mismatch — rescan the code');
-    return out;
+    super(LTDecoder);
   }
 }
