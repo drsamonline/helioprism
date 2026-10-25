@@ -1,9 +1,9 @@
 {
   "name": "helioprism",
   "version": "1.0.0",
-  "description": "One app, two optical transports — send a file with light over QR or a colour matrix. Offline, no network.",
+  "description": "One app, two optical transports \u2014 send a file with light over QR or a colour matrix. Offline, no network.",
   "type": "module",
-  "license": "SEE LICENSE IN LICENSE",
+  "license": "PolyForm-Noncommercial-1.0.0",
   "author": "Dr Sohil Momin (https://github.com/drsamonline)",
   "homepage": "https://drsamonline.github.io/helioprism/",
   "repository": {
