@@ -1,6 +1,6 @@
 {
   "name": "helioprism",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "One app, two optical transports \u2014 send a file with light over QR or a colour matrix. Offline, no network.",
   "type": "module",
   "license": "PolyForm-Noncommercial-1.0.0",
