@@ -4,6 +4,12 @@
 
 # Helioprism
 
+<!-- shot:start -->
+
+![Screenshot](docs/shot.png)
+
+<!-- shot:end -->
+
 **One app. Two kinds of light.**
 
 Move a file between two devices using only a screen and a camera — no network,
