@@ -1,6 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>
+/* The palette blocks are keyed on data-theme, and nothing was setting it, so both
+   this app's own colours and its theme toggle were inert - it rendered web-kit's
+   defaults, which is why it looked like its siblings. Set it before first paint. */
+(function () {
+  var KEY = 'helioprism-theme';
+  var stored = null;
+  try { stored = localStorage.getItem(KEY); } catch (e) {}
+  var dark = stored ? stored === 'dark'
+                    : matchMedia('(prefers-color-scheme: dark)').matches;
+  document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+})();
+</script>
+
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#0b1020" />
@@ -16,32 +30,56 @@
     <button class="ghost-btn" id="backBtn" hidden aria-label="Back">&#8592;</button>
     <div class="brand"><span class="brand-mark">&#9670;</span> Helioprism</div>
     <a class="ghost-btn" href="https://github.com/drsamonline/helioprism" target="_blank" rel="noopener" aria-label="GitHub">&#9737;</a>
+    <button class="theme-toggle" id="theme" type="button" aria-label="Switch colour theme">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true">
+        <circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.4M12 19.1v2.4M2.5 12h2.4M19.1 12h2.4M5.3 5.3l1.7 1.7M17 17l1.7 1.7M18.7 5.3 17 7M7 17l-1.7 1.7"/>
+      </svg>
+      <span id="theme-label">Light</span>
+    </button>
   <button type="button" id="save-data" title="Download everything this app has saved on this device" style="font:inherit;color:inherit;background:transparent;border:1px solid currentColor;border-radius:6px;padding:.25em .6em;margin:.5em 0;cursor:pointer;opacity:.85">Save my data</button></header>
 
   <main class="wrap">
     <!-- HOME -->
     <section id="screen-home" class="screen active">
+      <div class="sun">
+        <svg viewBox="0 0 120 120" aria-hidden="true">
+          <!-- the mark of the app: a sun through a prism, in the app's own amber -->
+          <circle cx="30" cy="60" r="13" fill="none" stroke="currentColor" stroke-width="1.6" opacity=".55"/>
+          <path d="M43 60h22" stroke="currentColor" stroke-width="1.6" opacity=".45"/>
+          <path d="M78 38 106 88H50Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+          <path d="M98 68h20M98 76h20M98 84h20" stroke="currentColor" stroke-width="1.6" opacity=".8"/>
+        </svg>
+      </div>
+      <p class="kicker">screen and camera · nothing in between</p>
       <h1 class="hero">One app.<br /><span>Two kinds of light.</span></h1>
-      <p class="lede">Helioprism sends a file between two devices using only a screen and a camera — picking the transport that fits. No network, no cables, no pairing.</p>
+      <p class="lede">Sends a file between two devices using only a screen and a camera — picking the
+      transport that fits. No network, no cables, no pairing.</p>
 
-      <div class="mode-grid">
-        <button class="mode-card send" id="goSend">
-          <span class="mode-icon">&#8679;</span>
-          <span class="mode-title">Send</span>
-          <span class="mode-sub">Pick files, show the code</span>
+      <div class="doors">
+        <button class="door send" id="goSend">
+          <span class="door-no">01</span>
+          <span class="door-title">Send</span>
+          <span class="door-sub">Pick files, show the code</span>
         </button>
-        <button class="mode-card receive" id="goReceive">
-          <span class="mode-icon">&#8681;</span>
-          <span class="mode-title">Receive</span>
-          <span class="mode-sub">Point a camera at the code</span>
+        <button class="door receive" id="goReceive">
+          <span class="door-no">02</span>
+          <span class="door-title">Receive</span>
+          <span class="door-sub">Point a camera at the code</span>
         </button>
       </div>
 
-      <ul class="facts">
-        <li><strong>QR</strong><span>universal — any camera, any scanner</span></li>
-        <li><strong>SpectraCode</strong><span>colour matrix — several KB per frame</span></li>
-        <li><strong>Auto</strong><span>picks the right one per file</span></li>
-      </ul>
+      <div class="rail">
+        <div class="rail-head">the two transports</div>
+        <div class="rail-row">
+          <span class="dot qr"></span><b>QR</b><span>universal — any camera, any scanner</span>
+        </div>
+        <div class="rail-row">
+          <span class="dot spectra"></span><b>SpectraCode</b><span>colour matrix — several KB per frame</span>
+        </div>
+        <div class="rail-row">
+          <span class="dot auto"></span><b>Auto</b><span>picks the right one per file</span>
+        </div>
+      </div>
     </section>
 
     <!-- SEND -->
@@ -166,5 +204,109 @@ window.addEventListener("error", function () { window.__bootError = true; });
   .card,[class*="card"]{border-radius:14px !important}
   button:not(.ghost):not(.tab){background:var(--acc) !important}
 </style>
+
+<style id="app-theme">
+  /* helioprism - its own palette, type and shape.
+     Keyed on data-theme so the in-app theme toggle still works; !important is
+     required because web-kit sets these as inline styles on <html>.
+
+     Deliberately NOT the same shape as its siblings: hairline borders, square
+     corners and a numbered door instead of a rounded card, because this app is
+     an instrument for two transports rather than a generic sender. */
+  html[data-theme="dark"]{--bg:#140e0a !important;--card:#1c1209 !important;--ink:#fcf5ee !important;--mut:#ae865d !important;--line:#382109 !important;--acc:#e49d4c !important;}
+  html[data-theme="light"]{--bg:#fdf9f4 !important;--card:#ffffff !important;--ink:#241b14 !important;--mut:#ad702c !important;--line:#f0e0cd !important;--acc:#b26205 !important;}
+
+  html,body{font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif !important;
+    background-image:radial-gradient(760px 340px at 50% -150px,
+      color-mix(in srgb, var(--acc) 15%, transparent), transparent 72%) !important;
+    background-repeat:no-repeat !important;background-attachment:fixed !important}
+
+  /* square, hairline, measured - not rounded */
+  button,.btn{border-radius:4px !important}
+  input,textarea,select{border-radius:3px !important}
+  .card,[class*="card"]{border-radius:6px !important;border:1px solid var(--line) !important}
+  button:not(.ghost):not(.tab){background:var(--acc) !important}
+
+  .sun{width:88px;margin:8px auto 14px;color:var(--acc)}
+  .sun svg{width:88px;height:88px;display:block;filter:drop-shadow(0 0 22px color-mix(in srgb,var(--acc) 45%,transparent))}
+  .kicker{text-align:center;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:10.5px;
+    letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin:0 0 10px}
+
+  /* two numbered doors */
+  .doors{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:24px 0 18px}
+  @media(max-width:520px){.doors{grid-template-columns:1fr}}
+  .door{position:relative;text-align:left;padding:20px 18px 18px;background:transparent;
+    border:1px solid var(--line);border-radius:6px;color:var(--ink);cursor:pointer;
+    display:flex;flex-direction:column;gap:4px;transition:border-color .15s,background .15s}
+  .door:hover{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 7%,transparent)}
+  .door-no{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:10.5px;letter-spacing:.14em;color:var(--acc)}
+  .door-title{font-size:22px;font-weight:600;letter-spacing:-.02em}
+  .door-sub{font-size:13px;color:var(--mut)}
+  .door::after{content:'';position:absolute;right:10px;top:10px;width:9px;height:9px;
+    border-right:1px solid var(--acc);border-top:1px solid var(--acc);opacity:.6}
+
+  /* the transport rail */
+  .rail{border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:14px 0;margin:6px 0 0}
+  .rail-head{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:10px;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--mut);margin-bottom:10px}
+  .rail-row{display:flex;align-items:center;gap:10px;font-size:13.5px;padding:5px 0}
+  .rail-row b{min-width:96px;font-weight:600}
+  .rail-row span:last-child{color:var(--mut)}
+  .dot{width:9px;height:9px;border-radius:2px;display:inline-block;flex:none}
+  .dot.qr{background:#9db4d6}
+  .dot.spectra{background:var(--acc)}
+  .dot.auto{background:var(--mut);opacity:.6}
+
+  .theme-toggle{display:inline-flex;align-items:center;gap:6px;cursor:pointer;background:transparent;
+    border:1px solid var(--line);border-radius:999px;padding:5px 11px 5px 8px;color:var(--mut);
+    font:inherit;font-size:11.5px;line-height:1;white-space:nowrap}
+  .theme-toggle:hover{color:var(--ink);border-color:var(--acc)}
+  .theme-toggle svg{width:13px;height:13px}
+
+  /* the palette blocks need a default for the moment before the boot script runs */
+  :root{--bg:#140e0a;--card:#1c1209;--ink:#fcf5ee;--mut:#ae865d;--line:#382109;--acc:#e49d4c}
+
+  /* web-kit hardcodes body's colour and leaves the background transparent, so a
+     themed page rendered pale text on the browser's white canvas. Both follow the
+     palette now, which is what makes dark and light actually work here. */
+  html,body{background-color:var(--bg) !important;color:var(--ink) !important}
+
+  /* web-kit paints every button with the accent; a door is a choice, not a call
+     to action, so it stays an outline until you hover it */
+  /* web-kit's rule is button:not(.ghost):not(.tab) with !important, so these have
+     to out-specify it rather than merely follow it */
+  button.door:not(.ghost):not(.tab){background:transparent !important;color:var(--ink) !important}
+  button.door:not(.ghost):not(.tab):hover{background:color-mix(in srgb,var(--acc) 8%,transparent) !important;
+    border-color:var(--acc) !important}
+  button.theme-toggle:not(.ghost):not(.tab){background:transparent !important;color:var(--mut) !important}
+  button.theme-toggle:not(.ghost):not(.tab):hover{color:var(--ink) !important;border-color:var(--acc) !important}
+  .door-sub{color:var(--mut) !important}
+
+  /* the hero's second line takes the app's own light instead of web-kit's violet */
+  .hero span{background:linear-gradient(92deg,var(--acc),#c98a4e) !important;
+    -webkit-background-clip:text !important;background-clip:text !important;color:transparent !important}
+
+  /* the running head belongs to the page, not to the kit */
+  .topbar{background:color-mix(in srgb,var(--bg) 88%,transparent) !important;
+    border-bottom:1px solid var(--line) !important}
+</style>
+
+<script>
+(function () {
+  var root = document.documentElement, btn = document.getElementById('theme');
+  var label = document.getElementById('theme-label'), KEY = 'helioprism-theme';
+  function paint(mode) {
+    var dark = mode === 'dark' || (mode === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
+    root.setAttribute('data-theme', dark ? 'dark' : 'light');
+    if (label) label.textContent = dark ? 'Dark' : 'Light';
+  }
+  paint(root.getAttribute('data-theme') || 'system');
+  if (btn) btn.addEventListener('click', function () {
+    var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    try { localStorage.setItem(KEY, next); } catch (e) {}
+    paint(next);
+  });
+})();
+</script>
 </body>
 </html>
