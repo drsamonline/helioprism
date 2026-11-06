@@ -5,35 +5,36 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Helioprism — one app, two kinds of light</title>
 <meta name="description" content="Moves a file between two devices using only a screen and a camera. The same rateless frame stream over two transports — monochrome QR and 36-colour SpectraCode — with the receiver auto-detecting which one arrived.">
-<meta name="theme-color" content="#0a0d1c" media="(prefers-color-scheme: dark)">
-<meta name="theme-color" content="#f7f6f2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#140e0a" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#fdf9f4" media="(prefers-color-scheme: light)">
 <meta property="og:title" content="Helioprism — one app, two kinds of light">
 <meta property="og:description" content="A screen, a camera, and the right transport for the job.">
 <style>
   /* A prism: one white beam in, two spectra out. The page is built from that
      single idea, and the two transports are the two beams. */
   :root {
-    --bg: #0a0d1c; --surface: #151c36; --card: #121834;
-    --ink: #eef2ff; --mut: #97a3c7; --line: rgba(238,242,255,0.14);
-    --violet: #a78bfa; --cyan: #22d3ee; --amber: #e49d4c;
+    /* the app's palette, not the old landing's: warm black and amber */
+    --bg: #140e0a; --surface: #231609; --card: #1c1209;
+    --ink: #fcf5ee; --mut: #ae865d; --line: #382109;
+    --violet: #9db4d6; --cyan: #c98a4e; --amber: #e49d4c;
     --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
     --sans: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
   }
   @media (prefers-color-scheme: light) {
-    :root { --bg: #f7f6f2; --surface: #ffffff; --card: #ffffff; --ink: #141a30; --mut: #5b6484;
-            --line: rgba(20,26,48,0.14); --violet: #6d28d9; --cyan: #0e7490; --amber: #a35f08; }
+    :root { --bg: #fdf9f4; --surface: #ffffff; --card: #ffffff; --ink: #241b14; --mut: #ad702c;
+            --line: #faecdc; --violet: #3d5a80; --cyan: #b26205; --amber: #b26205; }
   }
-  :root[data-theme="dark"] { --bg: #0a0d1c; --surface: #151c36; --card: #121834; --ink: #eef2ff;
-    --mut: #97a3c7; --line: rgba(238,242,255,0.14); --violet: #a78bfa; --cyan: #22d3ee; --amber: #e49d4c; }
-  :root[data-theme="light"] { --bg: #f7f6f2; --surface: #fff; --card: #fff; --ink: #141a30;
-    --mut: #5b6484; --line: rgba(20,26,48,0.14); --violet: #6d28d9; --cyan: #0e7490; --amber: #a35f08; }
+  :root[data-theme="dark"] { --bg: #140e0a; --surface: #231609; --card: #1c1209; --ink: #fcf5ee;
+    --mut: #ae865d; --line: #382109; --violet: #9db4d6; --cyan: #c98a4e; --amber: #e49d4c; }
+  :root[data-theme="light"] { --bg: #fdf9f4; --surface: #fff; --card: #fff; --ink: #241b14;
+    --mut: #ad702c; --line: #faecdc; --violet: #3d5a80; --cyan: #b26205; --amber: #b26205; }
 
   * { box-sizing: border-box; }
   html { scroll-behavior: smooth; }
   body { margin: 0; color: var(--ink); font-family: var(--sans); font-size: 16.5px; line-height: 1.62;
          -webkit-font-smoothing: antialiased; background: var(--bg);
          background-image: radial-gradient(46rem 26rem at 50% -14%,
-           color-mix(in srgb, var(--violet) 20%, transparent), transparent 64%); }
+           color-mix(in srgb, var(--amber) 18%, transparent), transparent 64%); }
   .wrap { max-width: 1020px; margin: 0 auto; padding: 0 26px; }
   a { color: var(--cyan); text-underline-offset: 3px; }
   code { font-family: var(--mono); font-size: .86em; background: var(--surface);
@@ -69,9 +70,9 @@
   .lead b { color: var(--ink); font-weight: 600; }
   .cta { display: flex; flex-wrap: wrap; gap: 10px; margin: 26px 0 0; justify-content: center; }
   .btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 20px; border-radius: 9px;
-         font-size: 15px; font-weight: 600; text-decoration: none; color: #0a0d1c;
-         background: linear-gradient(92deg, var(--violet), var(--cyan)); border: 0;
-         box-shadow: 0 14px 40px -18px var(--violet); }
+         font-size: 15px; font-weight: 600; text-decoration: none; color: #241b14;
+         background: linear-gradient(92deg, var(--amber), var(--cyan)); border: 0;
+         box-shadow: 0 14px 40px -18px var(--amber); }
   .btn:hover { filter: brightness(1.08); }
   .btn.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line);
                box-shadow: none; font-weight: 500; }
