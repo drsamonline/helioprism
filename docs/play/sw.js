@@ -1,6 +1,6 @@
 // Service worker: cache the app shell so Helioprism runs with no network.
 
-const CACHE = 'helioprism-v1';
+const CACHE = 'helioprism-v2';
 const SHELL = [
   './',
   './index.html',
@@ -33,6 +33,28 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   if (request.method !== 'GET' || new URL(request.url).origin !== self.location.origin) return;
+
+  const url = new URL(request.url);
+  const isCode = request.mode === 'navigate' ||
+    /\.(html|css|js|json|webmanifest)$/i.test(url.pathname);
+
+  // Documents and code are network-first. Cache-first HTML and CSS hid every
+  // release: a pushed index.html and styles.css never reached the browser, so a
+  // redesigned app kept rendering the old one. Images stay cache-first, which is
+  // what keeps it working with the network off.
+  if (isCode) {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          const copy = response.clone();
+          caches.open(CACHE).then((c) => c.put(request, copy)).catch(() => {});
+          return response;
+        })
+        .catch(() => caches.match(request).then((hit) => hit || caches.match('./index.html'))),
+    );
+    return;
+  }
+
   event.respondWith(
     caches.match(request).then(
       (hit) =>
@@ -40,7 +62,7 @@ self.addEventListener('fetch', (event) => {
         fetch(request)
           .then((response) => {
             const copy = response.clone();
-            caches.open(CACHE).then((cache) => cache.put(request, copy)).catch(() => {});
+            caches.open(CACHE).then((c) => c.put(request, copy)).catch(() => {});
             return response;
           })
           .catch(() => caches.match('./index.html')),
