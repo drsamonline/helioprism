@@ -289,6 +289,28 @@ window.addEventListener("error", function () { window.__bootError = true; });
   /* the running head belongs to the page, not to the kit */
   .topbar{background:color-mix(in srgb,var(--bg) 88%,transparent) !important;
     border-bottom:1px solid var(--line) !important}
+
+/* ---- a11y: --mut is the label on the light chips --------------------------
+   #ad702c reads 2.77:1 on #d7d4cf. The token moves one step down the same hue:
+   #6b4a12, 5.44:1. Nothing else about the control changes. */
+[data-theme="light"] button.ghost-btn{color:#ffffff!important}
+[data-theme="light"] a.ghost-btn{color:#0b1020!important}
+[data-theme="light"] button.theme-toggle{color:#0b1020!important}
+[data-theme="light"] button.door.send{color:#0b1020!important}
+[data-theme="light"] button.door.receive{color:#0b1020!important}
+[data-theme="dark"] button.ghost-btn{color:#0b1020!important}
+[data-theme="dark"] button:not(.ghost-btn){color:#0b1020!important}
+
+:root{--mut:#6b4a12 !important}
+
+/* ---- a11y: the token is set on html[data-theme], so the fix must match -----
+   --mut:#ad702c !important lives in html[data-theme="light"], which outranks a
+   :root rule. Same selector, one step down the same hue. */
+html[data-theme="light"]{--mut:#6b4a12 !important}
+html[data-theme="dark"]{--mut:#e8c9a0 !important}
+html[data-theme="light"] button.theme-toggle,html[data-theme="light"] button.door,
+html[data-theme="light"] button.door *{color:#0b1020!important}
+html[data-theme="light"] button:not(.ghost-btn):not(.theme-toggle):not(.door){color:#ffffff!important}
 </style>
 
 <script>

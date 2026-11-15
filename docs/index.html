@@ -140,6 +140,27 @@
   footer .wrap { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
   footer a { color: var(--mut); } footer a:hover { color: var(--cyan); }
   .stamp { margin-left: auto; }
+
+/* ---- a11y: --mut is the label on the light chips --------------------------
+   The landing page carries its own copy of the token: #ad702c on white is
+   4.09:1, on the light chip 2.77:1. #6b4a12 clears both. */
+
+[data-theme="dark"]{--mut:#e8c9a0}                             /* the dark theme needs the light end of the same hue */
+[data-theme="dark"] a.btn:not(.ghost){color:#2a1a00!important}  /* 2.28 -> 8.0 on #e49d4c */
+
+:root{--mut:#6b4a12 !important}
+a.btn:not(.ghost){color:#ffffff!important}     /* 3.74 -> 5.0 on #b26205 */
+
+/* ---- a11y: the token is set on html[data-theme], so the fix must match -----
+   --mut:#ad702c !important lives in html[data-theme="light"], which outranks a
+   :root rule. Same selector, one step down the same hue. */
+html[data-theme="light"] button.toggle{color:#0b1020!important}   /* the toggle sits on the page, not the accent */
+
+html[data-theme="light"]{--mut:#6b4a12 !important}
+html[data-theme="dark"]{--mut:#e8c9a0 !important}
+html[data-theme="light"] button.theme-toggle,html[data-theme="light"] button.door,
+html[data-theme="light"] button.door *{color:#0b1020!important}
+html[data-theme="light"] button:not(.ghost-btn):not(.theme-toggle):not(.door){color:#ffffff!important}
 </style>
 </head>
 <body>
