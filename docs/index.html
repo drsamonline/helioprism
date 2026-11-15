@@ -154,13 +154,16 @@ a.btn:not(.ghost){color:#ffffff!important}     /* 3.74 -> 5.0 on #b26205 */
 /* ---- a11y: the token is set on html[data-theme], so the fix must match -----
    --mut:#ad702c !important lives in html[data-theme="light"], which outranks a
    :root rule. Same selector, one step down the same hue. */
+html body html[data-theme="light"] button.toggle,
+html body html[data-theme="light"] button.toggle *{color:#0b1020!important}
+
 html[data-theme="light"] button.toggle{color:#0b1020!important}   /* the toggle sits on the page, not the accent */
 
 html[data-theme="light"]{--mut:#6b4a12 !important}
 html[data-theme="dark"]{--mut:#e8c9a0 !important}
 html[data-theme="light"] button.theme-toggle,html[data-theme="light"] button.door,
 html[data-theme="light"] button.door *{color:#0b1020!important}
-html[data-theme="light"] button:not(.ghost-btn):not(.theme-toggle):not(.door){color:#ffffff!important}
+html[data-theme="light"] button:not(.ghost-btn):not(.theme-toggle):not(.door):not(.toggle){color:#ffffff!important}
 </style>
 </head>
 <body>
